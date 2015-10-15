@@ -1,0 +1,114 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <title>Web-socket Demo</title>
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <link rel="import" href="../web-socket.html">
+
+    <style>
+        h1{
+            font-weight:normal;
+            font-size: 30px;
+        }
+        
+        h1 code{
+            font-size: 14px;
+            font-style: italic;
+        }
+        
+        h2{
+            font-weight: normal;
+            font-size: 24px;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            padding: 20px;
+            max-width: 48em;
+            margin: 0 auto;
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .container .group {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+
+<body unresolved>
+   <a href="index.html">Back</a>
+    <!-- Wrap in template is="dom-bind", to enable data binding without creating a custom element-->
+    <template is="dom-bind" id="app">
+        <h1>
+            Websocket example with Event Handlers:<br> 
+            <code>&lt;web-socket auto="<span>{{auto}}</span>" url="<span>{{url}}</span>" on-message="handleMessage"&gt;&lt;/web-socket&gt;</code>
+        </h1>
+        <p>Enable the auto checkbox, to initialize an websocket connection. 
+        The tag above will update to display the current configuration. <br> 
+        Incoming data will then start displaying below:</p>
+        
+        <h2>Properties</h2>
+        <div class="container">
+            <div class="group">
+                <label for="url">Url</label>
+                <br>
+                <input name="url" id="url" type="text" value="{{url::input}}" placeholder="url">
+            </div>
+
+            <div>
+                <label for="auto">Auto</label>
+                <br>
+                <input name="auto" id="auto" type="checkbox" checked="{{auto::change}}">
+            </div>
+        </div>
+        
+        <ul id="datastream"></ul>
+
+        <web-socket url="{{url}}" auto="{{auto}}" on-message="handleMessage"></web-socket>
+
+        <script>
+            (function(){
+                var app = document.querySelector('#app');
+                var webSocket = document.querySelector('web-socket');
+                var dataStream = document.querySelector('#datastream');
+                var auto = document.querySelector('#auto');
+
+                //Set default properties
+                setDefaultProperties();
+                
+                //Here we define the function, that should be called when a message is recieved
+                app.handleMessage = function (event) {
+                    var li = document.createElement("li");
+                    li.innerHTML = event.detail.data;
+                    dataStream.appendChild(li);
+                    console.log("Event handler: ", event.detail.data);
+                };
+                
+                //We can also attach event listeners instead of declaring HTML attributes
+                webSocket.addEventListener('open', function(){
+                    alert("An websocket connection has been opened. AWE YEAH!!!");
+                });
+                
+                //Cleanup
+                webSocket.addEventListener('close', function(){
+                    console.clear();
+                    dataStream.innerHTML = "";
+                });
+                
+                function setDefaultProperties(){
+                    app.url = location.origin.replace(/^http/, 'ws');
+                    app.auto = false;
+                }
+            })();
+        </script>
+    </template>
+</body>
+
+</html>

@@ -1,0 +1,71 @@
+<link rel="import" href="../web-socket.html">   
+
+<dom-module id="websocket-databinding-demo-element">
+    <style>
+        :host {
+            font-family: 'Roboto', sans-serif;
+            padding: 20px;
+            max-width: 48em;
+            margin: 0 auto;
+            display: block
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .container .group {
+            margin-bottom: 10px;
+        }
+    </style>
+
+    <template>
+        <p id="datalabel">Response: <span>{{data}}</span></p>
+
+        <div class="container">
+            <div class="group">
+                <label for="url">Url</label>
+                <br>
+                <input name="url" id="url" type="text" value="{{url::input}}" placeholder="url">
+            </div>
+
+            <div>
+                <label for="autoToggle">Auto</label>
+                <br>
+                <input id="autoToggle" type="checkbox" checked="{{auto::change}}">
+            </div>
+        </div>
+
+        <web-socket id="webSocket" url="{{url}}" auto="{{auto}}" last-response="{{data}}"></web-socket>
+
+    </template>
+    <script>
+        Polymer({
+            is: 'websocket-databinding-demo-element',
+            
+            properties:{
+                url: String,
+                auto: Boolean,
+                data: String,
+                foobar: String
+            },
+            
+            ready: function(){
+                var url = document.querySelector('#url');
+                var _this = this;
+
+                //Set default properties
+                this.url = location.origin.replace(/^http/, 'ws');
+                this.auto = true;
+
+                //Clean up. Reset data when connection is closed
+                this.$.webSocket.addEventListener('close', function () {
+                    _this.data = "";
+                    console.clear();
+                    console.log("WebSocket connection was closed");
+                });
+            }
+        });
+    </script>
+</dom-module>

@@ -1,0 +1,19 @@
+{
+  "name": "web-socket-polymer",
+  "version": "1.0.0",
+  "description": "An element providing a starting point for your own reusable Polymer elements.",
+  "main": "index.html",
+  "directories": {
+    "test": "test"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "polyserve && npm socketServer.js"
+  },
+  "author": "jlndk",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.13.3",
+    "ws": "^0.8.0"
+  }
+}

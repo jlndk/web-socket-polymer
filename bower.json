@@ -1,0 +1,27 @@
+{
+  "name": "web-socket-polymer",
+  "version": "1.0.0",
+  "authors": [
+    "jlndk <jonas@jonasln.dk>"
+  ],
+  "description": "A polymer wrapper for the websocket API, including databinding!",
+  "keywords": [
+    "web-component",
+    "polymer",
+    "websocket"
+  ],
+  "main": "web-socket.html",
+  "license": "http://polymer.github.io/LICENSE.txt",
+  "homepage": "https://github.com/jlndk/polymer-web-socket/",
+  "ignore": [
+    "/.*",
+    "/test/"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#^1.1.0"
+  },
+  "devDependencies": {
+    "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
+    "web-component-tester": "*"
+  }
+}

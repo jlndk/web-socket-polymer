@@ -1,0 +1,307 @@
+<link rel="import" href="../polymer/polymer.html">
+
+<!--
+A polymer wrapper for the websocket API, including databinding!
+
+Example with events:
+
+    <web-socket on-open="handleConnection" on-message="handleResponse" url="ws://www.example.com/socketserver" protocol="protocolOne"></web-socket>
+    
+Example with data binding:
+
+    <web-socket auto last-response="{{response}}" url="ws://www.example.com/socketserver"></web-socket>
+You can then subscripe to events:
+    
+    webSocket.addEventListener('open', function(){
+        //The websocket connection is open!!!
+    });
+
+@group Posibly Iron Elements
+@element web-socket
+@demo demo/index.html
+-->
+<dom-module id="web-socket">
+
+    <script>
+        Polymer({
+
+            is: 'web-socket',
+
+            /**
+             * Fired when the socket is closed.
+             *
+             * @event close
+             */
+            /**
+             * Fired when the socket is opened.
+             *
+             * @event open
+             */
+            /**
+             * Fired when a message is received from the server.
+             *
+             * @event message
+             */
+            /**
+             * Fired when an error has occoured.
+             *
+             * @event error
+             */
+
+            properties: {
+
+                /**
+                 * If true, automatically performs an Web Socket request when either url, body or protocols changes.
+                 */
+                auto: {
+                    type: Boolean,
+                    value: false,
+                    notify: true,
+                    reflectToAttribute: true
+                },
+
+                /**
+                 * The URL to which to connect; this should be the URL to which the WebSocket server will respond.
+                 * @default {null}
+                 */
+                url: {
+                    type: String,
+                    notify: true,
+                    reflectToAttribute: true,
+                    value: location.origin.replace(/^http/, 'ws')
+                },
+
+                /**
+                 * Body content to send with the request.
+                 *
+                 * The body will be passed to the browser unmodified, and it
+                 * will handle any encoding.
+                 *
+                 * @type {Object|String|ArrayBuffer|Blob}
+                 */
+                body: {
+                    type: Object,
+                    value: null
+                },
+
+                /**
+                 * Either a single protocol string or an array of protocol strings. 
+                 * These strings are used to indicate sub-protocols, 
+                 * so that a single server can implement multiple WebSocket sub-protocols 
+                 * (for example, you might want one server to be able to handle different types of interactions depending on the specified protocol). 
+                 * If you don't specify a protocol string, an empty string is assumed.
+                 * @type {Object|String}
+                 */
+                protocols: {
+                    type: String,
+                    value: ""
+                },
+
+                /**
+                 * lastRequest's response.
+                 *
+                 * Note that lastResponse and lastError are set when lastRequest finishes,
+                 * so if loading is true, then lastResponse and lastError will correspond
+                 * to the result of the previous request.
+                 *
+                 * The type of the response is determined by the server.
+                 * 
+                 * @type {Object|String}
+                 */
+                lastResponse: {
+                    type: Object,
+                    notify: true,
+                    readOnly: true
+                },
+
+                /**
+                 * lastRequest's error, if any.
+                 *
+                 * @type {Object}
+                 */
+                lastError: {
+                    type: Object,
+                    notify: true,
+                    readOnly: true
+                },
+
+                /**
+                 * The current state of the connection.
+                 * 
+                 * Can be the following: <br> 
+                 *
+                 * 0: CONNECTING. The connection is not yet open.<br>
+                 * 1: OPEN. The connection is open and ready to communicate.<br>
+                 * 2: CLOSING. The connection is in the process of closing.<br>
+                 * 3: CLOSED. The connection is closed or couldn't be opened.
+                 */
+                readyState: {
+                    type: Number,
+                    value: null
+                },
+
+                /**
+                 * A reference to the WebSocket instance used to generate the
+                 * network request.
+                 *
+                 * @type {WebSocket}
+                 * @default {null}
+                 */
+                webSocket: {
+                    type: Object,
+                    notify: true,
+                    readOnly: true,
+                    value: function () {
+                        return this._createWebSocket();
+                    }
+                }
+            },
+
+            observers: [
+                '_propertiesChanged(auto, url, body, protocols)'
+            ],
+
+            // Element Lifecycle
+            ready: function () {
+
+            },
+
+            attached: function () {
+                // `attached` fires once the element and its parents have been inserted
+                // into a document.
+                //
+                // This is a good place to perform any work related to your element's
+                // visual state or active behavior (measuring sizes, beginning animations,
+                // loading resources, etc).
+            },
+
+            detached: function () {
+                // The analog to `attached`, `detached` fires when the element has been
+                // removed from a document.
+                //
+                // Use this to clean up anything you did in `attached`.
+            },
+
+            // Element Behavior
+
+            /**
+             * Establishes a WebSocket connection to the specified URL. Is not required if auto is true
+             */
+            open: function () {
+                var webSocket = this._createWebSocket();
+                var _this = this; //Keep referance to this, when inside eventHandlers
+
+
+                if (webSocket != null) {
+                    try {
+                        webSocket.onopen = function (e) {
+                            _this.fire('open', {
+                                socket: webSocket,
+                                status: webSocket.read
+                            });
+                        };
+
+                        webSocket.onclose = function (e) {
+                            _this.fire('closed', {
+                                socket: webSocket,
+                                status: webSocket.read
+                            });
+                        }
+
+                        webSocket.onmessage = function (e) {
+                            _this._setLastResponse(e.data);
+
+                            _this.fire('message', {
+                                socket: webSocket,
+                                data: _this.lastResponse
+                            });
+                        };
+                    } catch (e) {
+                        console.log(e);
+                    }
+
+                } else {
+                    _this.fire('error', {
+                        error: new Error("Cannot create connection. Websocket is not created properly" + this.url)
+                    });
+                }
+            },
+
+            /**
+             * Transmits data to the server over the WebSocket connection.
+             */
+            send: function () {
+                if (!this.body && this.body !== '') {
+                    return;
+                }
+
+                var webSocket = this._createWebSocket();
+
+                if (webSocket != null) {
+                    webSocket.send(this.body);
+                }
+            },
+
+            /**
+             * Closes the WebSocket connection or connection attempt, 
+             * if any. If the connection is already CLOSED, this method does nothing.
+             */
+            close: function () {
+                if (this._webSocket != undefined) {;
+                    this.fire('close', {
+                        socket: this._webSocket
+                    });
+                    this._webSocket.close();
+                    this._webSocket = null;
+                }
+            },
+
+            /**
+             * Private instance of the WebSocket Api.
+             * Use the public webSocket Instead
+             */
+            _webSocket: null,
+
+            /*
+             * Start everything. Create a socket if auto is true
+             */
+            _propertiesChanged: function () {
+                if (!this.url && this.url !== '') {
+                    return;
+                }
+                if (this.auto) {
+                    this.open();
+
+                    if (!this.url && this.url !== '') {
+                        this.send();
+                    }
+                } else {
+                    this.close();
+                }
+            },
+
+            /*
+             * Creates the websocket. If an Socket already exists, then return that
+             */
+            _createWebSocket: function () {
+                if (!this.url && this.url != '') {
+                    return;
+                }
+
+                try {
+                    if (window.WebSocket != undefined) {
+                        if (this._webSocket == null) {
+                            this._webSocket = new WebSocket(this.url);
+                        }
+
+                        return this._webSocket;
+                    } else {
+                        throw new Error("Your browser does not support WebSocket");
+                    }
+                } catch (e) {
+                    console.log("OH NOES!");
+                }
+            }
+        });
+    </script>
+</dom-module>
