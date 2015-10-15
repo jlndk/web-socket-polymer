@@ -4,16 +4,18 @@
   "description": "An element providing a starting point for your own reusable Polymer elements.",
   "main": "index.html",
   "directories": {
-    "test": "test"
+    "test": "test",
+    "demo": "demo"
   },
-  "devDependencies": {},
+  "dependencies": {
+    "express": "^4.13.3"
+  },
+  "devDependencies": {
+      "ws": "^0.8.0"
+  },
   "scripts": {
     "test": "polyserve && npm socketServer.js"
   },
-  "author": "jlndk",
-  "license": "ISC",
-  "dependencies": {
-    "express": "^4.13.3",
-    "ws": "^0.8.0"
-  }
+  "author": "Jonas Lindenskov Nielsen <jonas@jonasln.dk>",
+  "license": "ISC"
 }

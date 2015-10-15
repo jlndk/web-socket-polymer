@@ -15,7 +15,9 @@
   "homepage": "https://github.com/jlndk/polymer-web-socket/",
   "ignore": [
     "/.*",
-    "/test/"
+    "/test/",
+    'node_modules',
+    'bower_components'
   ],
   "dependencies": {
     "polymer": "Polymer/polymer#^1.1.0"
