@@ -11,7 +11,7 @@
     "express": "^4.13.3"
   },
   "devDependencies": {
-      "ws": "^0.8.0"
+      "ws": "^7.2.0"
   },
   "scripts": {
     "test": "polyserve && npm socketServer.js"
